@@ -1,0 +1,13 @@
+linters:
+  disable-all: true
+  enable: # please keep this alphabetized
+    - ginkgolinter
+    - gocritic
+    - govet
+    - gofmt
+    - ineffassign
+    - revive
+    - staticcheck
+    - stylecheck
+    - testifylint
+    - bodyclose

@@ -1,0 +1,55 @@
+services:
+  gin_server:
+    image: gin_server:latest
+    container_name: "gin_server"
+    ports:
+      - 8080:8080
+    build:
+      context: ./gin_server
+      dockerfile: Dockerfile
+      target: dev #　targetをbuilderにしてあり、docker composeは開発環境の立ち上げのみを行う
+    volumes:
+      - ./gin_server/:/app
+    tty: true
+    restart: always
+    environment:
+    # 開発用のローカルpostgresを使う場合はdevを指定
+      - ENV=dev
+    # 本番用のpostgresを使う場合はprodを指定
+      # - ENV=prod
+
+  postgres:
+    image: postgres:16
+    container_name: "postgres"
+    volumes:
+      - ./postgres/data:/var/lib/postgresql/data
+      - ./postgres/init.d:/docker-entrypoint-initdb.d
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: ginuser
+      POSTGRES_PASSWORD: ginpassword
+      POSTGRES_DB: gin
+    hostname: postgres
+    restart: always
+    user: root
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: "pgadmin"
+    restart: always
+    ports:
+      - 1234:80
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ginuser@example.com
+      PGADMIN_DEFAULT_PASSWORD: ginuser
+    volumes:
+      - ./pgadmin:/var/lib/pgadmin
+    depends_on:
+      - postgres
+    user: root
+
+networks:
+  default:
+    driver: bridge
+    
