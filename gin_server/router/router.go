@@ -7,13 +7,8 @@ import (
 	"os"
 	"time"
 
-	"subscriber/controllers"
-	"subscriber/db"
-	"subscriber/dto"
-	"subscriber/models"
-	"subscriber/repositories"
-	"subscriber/services"
-	"subscriber/utils"
+	"gin_server/controllers"
+	"gin_server/utils"
 
 	"github.com/gin-contrib/cors"
 	ginzap "github.com/gin-contrib/zap"
@@ -50,11 +45,7 @@ func SetupRouter() *gin.Engine {
 			start := time.Now()
 
 			bodyBytes, _ := c.Get(keyRequestBody)
-			var j dto.PubSubMessage
-			_ = json.Unmarshal(bodyBytes.([]byte), &j)
-			id := j.Message.ID
-			subName := j.Subscription
-
+			body := bodyBytes.([]byte)
 
 			// CloudLoggingに送信用のメッセージを定義
 			heaserBytes, err := json.Marshal(c.Request.Header)
@@ -67,7 +58,7 @@ func SetupRouter() *gin.Engine {
 				zap.String("method", c.Request.Method),
 				zap.String("path", c.Request.URL.Path),
 				zap.String("query", c.Request.URL.RawQuery),
-				zap.Reflect("body_uryu_data", data),
+				zap.ByteString("body_uryu_data", body),
 				zap.String("ip", c.ClientIP()),
 				zap.String("user_agent", c.Request.UserAgent()),
 				zap.String("errors", c.Errors.ByType(gin.ErrorTypePrivate).String()),
@@ -88,13 +79,10 @@ func SetupRouter() *gin.Engine {
 
 	// PubSubメッセージの受信するcontrollerのセットアップ
 	ctx := context.Background()
-	db := db.NewDB(ctx)
-	repo := repositories.NewPubSubRepository(db)
-	service := services.NewPubSubService(repo)
-	controller := controllers.NewPubSubController(service)
+	controller := controllers.NewFormatCon(ctx)
 
 	// PubSubメッセージの受信するエンドポイント
-	r.POST("/", controller.Post)
+	r.POST("/", controller.Create)
 
 	return r
 }

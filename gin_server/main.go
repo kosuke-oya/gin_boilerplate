@@ -1,13 +1,8 @@
 package main
 
 import (
-	"bytes"
-	"fmt"
+	"gin_server/router"
 	"log"
-	"net/http"
-	"os"
-	"subscriber/router"
-	"subscriber/utils"
 )
 
 func main() {
